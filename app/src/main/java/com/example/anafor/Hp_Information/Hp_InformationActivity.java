@@ -45,12 +45,19 @@ public class Hp_InformationActivity extends AppCompatActivity {
         tv_hp_todayLunchTime =findViewById(R.id.tv_hp_todayLunchTime); // 오늘 점심시간
 
         tv_hp_intro = findViewById(R.id.tv_hp_intro);       //병원 소개
+        if(infoDTO.getHp_url()!= null){
+            tv_hp_intro.setText(infoDTO.getHp_url());
+        }
 
         hp_info_name.setText(infoDTO.getHp_name());
         hp_info_addr.setText(infoDTO.getHp_addr());
 
         hp_infor_tab_layout = findViewById(R.id.hp_infor_tab_layout);
         imgv_hp_infor_back = findViewById(R.id.imgv_hp_infor_back);
+
+
+
+
 
         imgv_hp_infor_back.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -97,7 +104,6 @@ public class Hp_InformationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Hp_InformationActivity.this, Hp_InformationReviewActivity.class);
-
                 startActivity(intent);
             }
         });
