@@ -10,7 +10,7 @@
     tools:openDrawer="start"
     tools:context=".MainActivity"
     android:id="@+id/drawer"
-    android:background="#25808080">
+    android:background="#FFFFFF">
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
@@ -39,7 +39,7 @@
                     android:id="@+id/tv_main_logo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Anafor"
+                    android:text="AnaFor"
                     android:layout_gravity="center"
                     android:textSize="28dp"
                     android:textColor="#fff"
@@ -54,16 +54,19 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
+
             <FrameLayout
                 android:id="@+id/container_main"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="9"/>
+                android:layout_weight="9" />
+
             <ViewFlipper
                 android:id="@+id/mainMidMenu"
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
-                android:layout_margin="10dp"/>
+                android:layout_margin="10dp"
+                android:layout_marginBottom="30dp"/>
             <com.google.android.material.bottomnavigation.BottomNavigationView
                 android:id="@+id/btm_nav"
                 android:layout_width="match_parent"
@@ -104,19 +107,8 @@
         android:gravity="center"
         android:textSize="15dp"
         android:visibility="visible"
-        android:text="한울직업전문학교"/>
+        android:text="AnaFor"/>
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="20dp"
-            android:textStyle="bold"
-            android:layout_marginTop="740dp"
-            android:layout_marginBottom="10dp"
-            android:textColor="@color/white"
-            android:gravity="center"
-            android:textSize="15dp"
-            android:text="로그아웃"
-            android:visibility="invisible"/>
     </com.google.android.material.navigation.NavigationView>
 
 </androidx.drawerlayout.widget.DrawerLayout>

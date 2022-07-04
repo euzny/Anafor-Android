@@ -13,12 +13,16 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -27,7 +31,10 @@ import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 
+import com.example.anafor.Common.AskTask;
+import com.example.anafor.Common.CommonMethod;
 import com.example.anafor.Common.CommonVal;
+import com.example.anafor.Hp_Information.Hp_InformationActivity;
 import com.example.anafor.Nav_Schedule.ScheduleActivity;
 import com.example.anafor.Nav_Choice.ChoiceActivity;
 import com.example.anafor.Pill_Main.Pill_MainFragment;
@@ -40,10 +47,16 @@ import com.example.anafor.Box_Main.Box_MainFragment;
 import com.example.anafor.Nav_MyReview.MyReviewActivity;
 import com.example.anafor.User.LoginActivity;
 import com.example.anafor.Nav_Vaccine.VaccineActivity;
+import com.example.anafor.User.UserDAO;
 import com.example.anafor.User.UserInfoActivity;
+import com.example.anafor.User.UserVO;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
+import com.google.gson.Gson;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -53,10 +66,11 @@ public class MainActivity extends AppCompatActivity {
     DrawerLayout drawer;
     NavigationView nav_view;
     ViewFlipper pic_Slid; // 사진 슬라이드
-    TextView tv_login; //신보배 0502 코드추가
+    TextView tv_login, tv_edit;
 
     /* 위치 권한 확인을 위한 코드 */
     private static final int GPS_ENABLE_REQUEST_CODE = 2001;
+    private static final int QR_REQUEST_CODE = 2002;
     private static final int PERMISSIONS_REQUEST_CODE = 100;
     String[] REQUIRED_PERMISSIONS = {Manifest.permission.ACCESS_FINE_LOCATION};
 
@@ -91,17 +105,13 @@ public class MainActivity extends AppCompatActivity {
 
         View headerView = nav_view.getHeaderView(0);
 
-        //신보배 0502 코드 추가
+        //headerView tv 아이디찾기
         tv_login = headerView.findViewById(R.id.tv_main_header_login);
-        tv_login.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                startActivity(intent);
-            }
-        });
+        tv_edit = headerView.findViewById(R.id.tv_main_header_edit);
 
         changeFragment(new Hp_MainFragment());
+
+
 
 
         //위치 권한 퍼미션
@@ -125,17 +135,30 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 // 프래그먼트가 각각의 화면에 맞게 전환 됨
-                // 광고 ViewFlipper 를 메인 엑티비티에만 적용시키고 
+                // 광고 ViewFlipper 를 메인 엑티비티에만 적용시키고
                 // 나머지 바텀메뉴 프래그먼트에는 안보이게 GONE 처리
                 if (item.getItemId() == R.id.btm_home){
+                    CommonVal.bottom_menu="1";
                     pic_Slid.setVisibility(View.VISIBLE);
                     changeFragment(new Hp_MainFragment());
                 }else if (item.getItemId() == R.id.btm_cheobang){
+                    CommonVal.bottom_menu="2";
                     pic_Slid.setVisibility(View.GONE);
-                    changeFragment(new Pill_MainFragment());
+                    //여기서 로그인 액티비티로 이동
+                    if(CommonVal.loginInfo == null){
+                        alertLogin();
+                    }else{
+                        changeFragment(new Pill_MainFragment());
+                    }
+
                 }else if (item.getItemId() == R.id.btm_yagtong){
+                    CommonVal.bottom_menu="3";
                     pic_Slid.setVisibility(View.GONE);
-                    changeFragment(new Box_MainFragment());
+                    if(CommonVal.loginInfo == null){
+                        alertLogin();
+                    }else {
+                        changeFragment(new Box_MainFragment());
+                    }
                 }
                 return true;
             }
@@ -147,23 +170,41 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                 if (item.getItemId() == R.id.nav_schedule){
-                    Intent intent = new Intent(MainActivity.this, ScheduleActivity.class);
-                    startActivity(intent);
+                if (item.getItemId() == R.id.nav_schedule){
+                    if(CommonVal.loginInfo == null){
+                        alertLogin();
+                    }else{
+                        Intent intent = new Intent(MainActivity.this, ScheduleActivity.class);
+                        startActivity(intent);
+                    }
                 }else if(item.getItemId() == R.id.nav_choice){
-                    Intent intent = new Intent(MainActivity.this, ChoiceActivity.class);
-                    startActivity(intent);
+                    if(CommonVal.loginInfo == null){
+                        alertLogin();
+                    }else{
+                        Intent intent = new Intent(MainActivity.this, ChoiceActivity.class);
+                        startActivity(intent);
+                    }
                 }else if (item.getItemId() == R.id.nav_review) {
-                    Intent intent = new Intent(MainActivity.this, MyReviewActivity.class);
-                    startActivity(intent);
+                    if(CommonVal.loginInfo == null){
+                        alertLogin();
+                    }else{
+                        Intent intent = new Intent(MainActivity.this, MyReviewActivity.class);
+                        startActivity(intent);
+                    }
                 }else if(item.getItemId() == R.id.nav_information){
-                    Intent intent = new Intent(MainActivity.this, VaccineActivity.class);
-                    startActivity(intent);
+                    if(CommonVal.loginInfo == null){
+                        alertLogin();
+                    }else{
+                        Intent intent = new Intent(MainActivity.this, VaccineActivity.class);
+                        startActivity(intent);
+                    }
                 }
                 return true;
             }
         });
     }
+
+
 
     // 이미지를 보여주기 위한 리스트 추가
     public void slidePic(){
@@ -179,9 +220,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+
     // 사진 슬라이드 구동
     private void fllipperImages(int image) {
         ImageView imageView = new ImageView(this);
+
+        pic_Slid.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, VaccineActivity.class);
+                startActivity(intent);
+            }
+        });
 
         // 가져온 사진을 채움
         imageView.setBackgroundResource(image);
@@ -201,24 +252,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void changeFragment(Fragment fragment){   /* 플래그먼트가 바뀌면서 */
         getSupportFragmentManager().beginTransaction().replace(R.id.container_main, fragment).commit();
-    }
-
-
-    //신보배 0517 코드 추가
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if(CommonVal.loginInfo != null){
-            tv_login.setText(CommonVal.loginInfo.getUser_name()+"님 반갑습니다");
-            tv_login.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(MainActivity.this, UserInfoActivity.class);
-                    startActivity(intent);
-                }
-            });
-            //btn_modify.setVisibility(View.VISIBLE);
-        }
     }
 
     // ActivityCompat.requestPermissions를 사용한 퍼미션 요청의 결과를 리턴받는 메소드
@@ -311,7 +344,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+
 
         switch (requestCode) {
             case GPS_ENABLE_REQUEST_CODE:
@@ -324,7 +357,28 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 break;
+            case IntentIntegrator.REQUEST_CODE:
+
+
+                IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+                if(result != null && result.getContents() != null){
+
+                    Toast.makeText(this, "큐알코드를 스캔합니다", Toast.LENGTH_SHORT).show();
+                    // todo
+                    //DB insert 처리를 함
+                    AskTask task = new AskTask("/pill");
+                    task.addParam("pill", result.getContents());
+
+                    CommonMethod.executeAskGet(task);
+                }else{
+                    Toast.makeText(this, "취소되었습니다", Toast.LENGTH_SHORT).show();
+                }
+
+     /*       */
+                break;
         }
+
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     public boolean checkLocationServicesStatus() {
@@ -332,6 +386,93 @@ public class MainActivity extends AppCompatActivity {
 
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
                 || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+    }
+
+    //로그인   했을때 : 사용자이름 띄우고 로그인버튼을 수정버튼으로 텍스트변경, 버튼클릭시 회원정보 정보수정화면으로 intent
+    //로그아웃 했을때 : 로그인버튼 클릭시 로그인화면으로 intent
+    @Override
+    protected void onResume() {
+
+        super.onResume();
+
+        SharedPreferences preferences = getSharedPreferences("login",MODE_PRIVATE);
+        String id = preferences.getString("id" , "");
+        String pw =  preferences.getString("pw" , "");
+        if(id.length() > 3 && pw.length() > 3){
+            UserDAO dao = new UserDAO(id,pw);
+            dao.isUserLogin();
+        }
+
+        if(CommonVal.loginInfo != null) {
+            tv_login.setText(CommonVal.loginInfo.getUser_name() + "님 반갑습니다");
+            tv_edit.setText("정보수정");
+            tv_edit.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    AskTask task = new AskTask("edit");
+                    task.addParam("user_id",CommonVal.loginInfo.getUser_id());
+                    InputStreamReader isr = CommonMethod.executeAskGet(task);
+                    Gson gson = new Gson();
+                    UserVO vo = gson.fromJson(isr, UserVO.class);
+                    CommonVal.loginInfo= vo;
+                    Intent intent = new Intent(MainActivity.this, UserInfoActivity.class);
+                    startActivity(intent);
+                }
+            });
+        }else{
+            tv_edit.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                    startActivity(intent);
+                }
+            });
+        }
+
+        if (CommonVal.bottom_menu.equals("1")){
+            getSupportFragmentManager().beginTransaction().replace(R.id.container_main, new Hp_MainFragment()).commit();
+        }else if (CommonVal.bottom_menu.equals("2")){
+            getSupportFragmentManager().beginTransaction().replace(R.id.container_main, new Pill_MainFragment()).commit();
+        }else if(CommonVal.bottom_menu.equals("3")){
+            getSupportFragmentManager().beginTransaction().replace(R.id.container_main, new Box_MainFragment()).commit();
+        }
+
+    }
+    //비로그인상태일때 로그인해야 이용가능하다는 알림
+    public void alertLogin(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setTitle("로그인");
+        builder.setMessage("로그인이 필요한 기능입니다. 로그인 하시겠습니까?");
+        builder.setPositiveButton("로그인", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Intent loginIntent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(loginIntent);
+            }
+        });
+        builder.setNegativeButton("취소", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                pic_Slid.setVisibility(View.VISIBLE);
+
+
+/*                Menu bottomNavigationMenu = btm_nav.getMenu();
+                bottomNavigationMenu.setGroupCheckable(0,true,false);
+                bottomNavigationMenu.findItem(R.id.btm_home).setChecked(true);
+                bottomNavigationMenu.findItem(R.id.btm_cheobang).setChecked(false);
+                bottomNavigationMenu.findItem(R.id.btm_yagtong).setChecked(false);*/
+            }
+        });
+        builder.show();
+    }
+
+    public void showQr(){
+        IntentIntegrator qrScan;
+        qrScan = new IntentIntegrator(MainActivity.this);
+        qrScan.setOrientationLocked(true); // default 가 세로모드인데 휴대폰 방향에 따라 가로, 세로로 자동 변경됩니다.
+        qrScan.setPrompt("QR 코드를 사각형 안에 넣어주세요.");
+        qrScan.initiateScan();
     }
 
 }

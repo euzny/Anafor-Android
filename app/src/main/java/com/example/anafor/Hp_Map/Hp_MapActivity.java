@@ -65,21 +65,8 @@ public class Hp_MapActivity extends AppCompatActivity implements MapView.MapView
         category = intent.getStringExtra("subject");
         Log.d("검색할 카테고리", "onCreate: "+category);
         bus.register(this);
-        
-        currentMarker = new MapPOIItem();  //현재 위치 마커
-        mMapView = new MapView(this);
-        mMapViewContainer = findViewById(R.id.view_map);
-        mMapViewContainer.addView(mMapView);
 
-        mMapView.setMapViewEventListener(this);
-        mMapView.setPOIItemEventListener(this);
-        mMapView.setCurrentLocationEventListener(this);
-
-        //현재위치 좌표 추적
-        gpsTracker = new GpsTracker(Hp_MapActivity.this);
-        makeCurrentMarker();   //현재 위치 마커 찍기
-        selectList(mCurrentLat,mCurrentLng,category);           //진료과목별 조회
-        Toast.makeText(Hp_MapActivity.this, mCurrentLat+"   "+mCurrentLng,Toast.LENGTH_LONG).show();
+        initView();
         btn_fab = findViewById(R.id.btn_fab);
         imgv_hp_map_back.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -93,13 +80,28 @@ public class Hp_MapActivity extends AppCompatActivity implements MapView.MapView
         btn_fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(Hp_MapActivity.this, mCurrentLat+"   "+mCurrentLng,Toast.LENGTH_LONG).show();
-                Log.d("btn_fab", "onClick: "+mCurrentLat+"      "+mCurrentLng);
-
                 makeCurrentMarker();
                 selectList(mCurrentLat, mCurrentLng, category);
             }
         });
+
+    }
+
+    public void initView(){
+
+        currentMarker = new MapPOIItem();  //현재 위치 마커
+        mMapView = new MapView(this);
+        mMapViewContainer = findViewById(R.id.view_map);
+        mMapViewContainer.addView(mMapView);
+
+        mMapView.setMapViewEventListener(this);
+        mMapView.setPOIItemEventListener(this);
+        mMapView.setCurrentLocationEventListener(this);
+
+        //현재위치 좌표 추적
+        gpsTracker = new GpsTracker(Hp_MapActivity.this);
+        makeCurrentMarker();   //현재 위치 마커 찍기
+        selectList(mCurrentLat,mCurrentLng,category);           //진료과목별 조회
 
     }
 
@@ -242,7 +244,7 @@ public class Hp_MapActivity extends AppCompatActivity implements MapView.MapView
 
     }
 
-    
+
     //마커 클릭시
     @Override
     public void onPOIItemSelected(MapView mapView, MapPOIItem mapPOIItem) {
@@ -303,9 +305,32 @@ public class Hp_MapActivity extends AppCompatActivity implements MapView.MapView
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //mMapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOff);
         mMapView.setShowCurrentLocationMarker(false);
     }
+
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        //if (mMapViewContainer.is) {
+        if(mMapViewContainer.getChildCount() == 0){
+            initView();
+        }else{
+            mMapViewContainer.removeView(mMapView);
+        }
+
+    }
+
+
+
+    @Override
+    protected void onPause() {
+       super.onPause();
+
+        mMapViewContainer.removeView(mMapView);
+        Log.d("", "onPause: ");
+    }
+
 
     @Override
     public void onBackPressed() {
